@@ -194,6 +194,10 @@ G_BEGIN_DECLS
  * nanoseconds since midnight in 64-bit signed integer array. It can
  * store zero or more time data. If you don't have Arrow format data,
  * you need to use #GArrowTime64ArrayBuilder to create a new array.
+ *
+ * #GArrowDecimalArray is a class for decimal array. It can store zero
+ * or more decimal data. If you don't have Arrow format data, you need
+ * to use #GArrowDecimalArrayBuilder to create a new array.
  */
 
 typedef struct GArrowArrayPrivate_ {
@@ -2105,6 +2109,51 @@ garrow_time64_array_get_values(GArrowTime64Array *array,
   return reinterpret_cast<const gint64 *>(values);
 }
 
+G_DEFINE_TYPE(GArrowDecimalArray,         \
+              garrow_decimal_array,       \
+              GARROW_TYPE_NUMERIC_ARRAY)
+
+static void
+garrow_decimal_array_init(GArrowDecimalArray *object)
+{
+}
+
+static void
+garrow_decimal_array_class_init(GArrowDecimalArrayClass *klass)
+{
+}
+
+/**
+ * garrow_decimal_array_new:
+ * @data_type: The #GArrowDecimalDataType.
+ * @length: The number of elements.
+ * @data: The decimal data in Arrow format of the array.
+ * @null_bitmap: (nullable): The bitmap that shows null elements. The
+ *   N-th element is null when the N-th bit is 0, not null otherwise.
+ *   If the array has no null elements, the bitmap must be %NULL and
+ *   @n_nulls is 0.
+ * @n_nulls: The number of null elements. If -1 is specified, the
+ *   number of nulls are computed from @null_bitmap.
+ *
+ * Returns: A newly created #GArrowDecimalArray.
+ *
+ * Since: 0.8.0
+ */
+GArrowDecimalArray *
+garrow_decimal_array_new(GArrowDecimalDataType *data_type,
+                         gint64 length,
+                         GArrowBuffer *data,
+                         GArrowBuffer *null_bitmap,
+                         gint64 n_nulls)
+{
+  auto array = garrow_primitive_array_new<arrow::Decimal128Type>(GARROW_DATA_TYPE(data_type),
+                                                                 length,
+                                                                 data,
+                                                                 null_bitmap,
+                                                                 n_nulls);
+  return GARROW_DECIMAL_ARRAY(array);
+}
+
 G_END_DECLS
 
 GArrowArray *
@@ -2179,6 +2228,9 @@ garrow_array_new_raw(std::shared_ptr<arrow::Array> *arrow_array)
     break;
   case arrow::Type::type::DICTIONARY:
     type = GARROW_TYPE_DICTIONARY_ARRAY;
+    break;
+  case arrow::Type::type::DECIMAL:
+    type = GARROW_TYPE_DECIMAL_ARRAY;
     break;
   default:
     type = GARROW_TYPE_ARRAY;

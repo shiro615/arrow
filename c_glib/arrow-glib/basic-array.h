@@ -630,4 +630,21 @@ gint64 garrow_time64_array_get_value(GArrowTime64Array *array,
 const gint64 *garrow_time64_array_get_values(GArrowTime64Array *array,
                                              gint64 *length);
 
+#define GARROW_TYPE_DECIMAL_ARRAY (garrow_decimal_array_get_type())
+G_DECLARE_DERIVABLE_TYPE(GArrowDecimalArray,
+                         garrow_decimal_array,
+                         GARROW,
+                         DECIMAL_ARRAY,
+                         GArrowNumericArray)
+struct _GArrowDecimalArrayClass
+{
+  GArrowNumericArrayClass parent_class;
+};
+
+GArrowDecimalArray *garrow_decimal_array_new(GArrowDecimalDataType *data_type,
+                                             gint64 length,
+                                             GArrowBuffer *data,
+                                             GArrowBuffer *null_bitmap,
+                                             gint64 n_nulls);
+
 G_END_DECLS
